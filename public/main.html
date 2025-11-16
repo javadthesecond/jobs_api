@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jobs Dashboard</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        background: linear-gradient(135deg, #e3f2fd, #f5f5f5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .container {
+        width: 950px;
+        max-width: 96vw;
+        background: #ffffff;
+        padding: 22px 24px 26px;
+        border-radius: 18px;
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+        position: relative;
+        display: flex;
+        gap: 18px;
+      }
+
+      .left,
+      .right {
+        flex: 1;
+        min-width: 0;
+      }
+
+      #message {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+        font-size: 13px;
+        min-height: 18px;
+      }
+
+      #message.error {
+        color: #d32f2f;
+      }
+
+      #message.success {
+        color: #2e7d32;
+      }
+
+      .tabs {
+        display: flex;
+        margin-bottom: 14px;
+        border-radius: 999px;
+        background: #f0f4f8;
+        padding: 4px;
+      }
+
+      .tab {
+        flex: 1;
+        text-align: center;
+        padding: 8px 0;
+        font-size: 14px;
+        cursor: pointer;
+        border-radius: 999px;
+        user-select: none;
+        transition: background 0.25s, color 0.25s, transform 0.1s;
+      }
+
+      .tab.active {
+        background: #007bff;
+        color: #ffffff;
+        font-weight: 600;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0, 123, 255, 0.25);
+      }
+
+      h2 {
+        margin: 0 0 14px;
+        font-weight: 600;
+        font-size: 20px;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 12px;
+      }
+
+      label {
+        font-size: 13px;
+        margin-bottom: 4px;
+        color: #333;
+      }
+
+      input,
+      select {
+        padding: 9px 10px;
+        border-radius: 8px;
+        border: 1px solid #d0d7de;
+        background: #fafafa;
+        transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+        font-size: 14px;
+      }
+
+      input:focus,
+      select:focus {
+        border-color: #007bff;
+        background: #ffffff;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+      }
+
+      button[type="submit"],
+      .btn {
+        padding: 9px 10px;
+        border: none;
+        border-radius: 10px;
+        background: #007bff;
+        color: white;
+        cursor: pointer;
+        transition: background 0.22s, transform 0.05s, box-shadow 0.2s;
+        margin-top: 4px;
+        font-weight: 600;
+        font-size: 14px;
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.35);
+      }
+
+      button[type="submit"]:hover:not(:disabled),
+      .btn:hover:not(:disabled) {
+        background: #005fcc;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(0, 95, 204, 0.4);
+      }
+
+      button[type="submit"]:disabled,
+      .btn:disabled {
+        opacity: 0.7;
+        cursor: default;
+        box-shadow: none;
+        transform: none;
+      }
+
+      .btn.secondary {
+        background: #f5f5f5;
+        color: #444;
+        box-shadow: none;
+        border: 1px solid #e0e0e0;
+      }
+
+      .btn.secondary:hover:not(:disabled) {
+        background: #ebf0f7;
+      }
+
+      .helper-text {
+        font-size: 11px;
+        color: #777;
+        margin-top: 3px;
+      }
+
+      .form-box {
+        display: none;
+        animation: fadeIn 0.25s ease;
+      }
+
+      .form-box.active {
+        display: block;
+      }
+
+      .jobs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+
+      .jobs-header h2 {
+        margin: 0;
+      }
+
+      .jobs-list {
+        margin-top: 8px;
+        max-height: 380px;
+        overflow-y: auto;
+        padding-right: 4px;
+      }
+
+      .job-card {
+        border-radius: 12px;
+        border: 1px solid #e3e8ee;
+        padding: 10px 11px;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, #f9fbff, #ffffff);
+        box-shadow: 0 3px 10px rgba(15, 23, 42, 0.06);
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .job-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 8px;
+      }
+
+      .job-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #111827;
+      }
+
+      .job-company {
+        font-size: 13px;
+        color: #4b5563;
+      }
+
+      .job-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        margin-top: 4px;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 9px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 500;
+      }
+
+      .status-pending {
+        background: #fff7e6;
+        color: #b7791f;
+      }
+
+      .status-interview {
+        background: #e6fffb;
+        color: #0f766e;
+      }
+
+      .status-decline {
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+
+      .job-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .job-actions select {
+        padding: 6px 7px;
+        font-size: 12px;
+        border-radius: 999px;
+      }
+
+      .empty-state {
+        font-size: 13px;
+        color: #6b7280;
+        text-align: center;
+        padding: 18px 6px;
+      }
+
+      .badge-count {
+        font-size: 11px;
+        padding: 3px 7px;
+        border-radius: 999px;
+        background: #eef2ff;
+        color: #4338ca;
+        font-weight: 500;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 780px) {
+        .container {
+          flex-direction: column;
+          height: auto;
+          max-height: 95vh;
+          overflow: hidden;
+        }
+
+        .jobs-list {
+          max-height: 260px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div id="message" aria-live="polite"></div>
+
+      <!-- LEFT: CREATE FORM -->
+      <div class="left">
+        <div class="tabs">
+          <div class="tab active" data-target="createBox">Create job</div>
+          <div class="tab" data-target="infoBox">Info</div>
+        </div>
+
+        <div class="form-box active" id="createBox">
+          <h2>Create new job</h2>
+          <form id="jobForm" novalidate>
+            <div class="field">
+              <label for="company">Company</label>
+              <input
+                type="text"
+                id="company"
+                placeholder="Company name"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label for="position">Position</label>
+              <input
+                type="text"
+                id="position"
+                placeholder="Job title"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label for="status">Status</label>
+              <select id="status">
+                <option value="pending">Pending</option>
+                <option value="interview">Interview</option>
+                <option value="decline">Declined</option>
+              </select>
+            </div>
+
+            <button type="submit" id="saveJobBtn">Create job</button>
+          </form>
+        </div>
+
+        <div class="form-box" id="infoBox">
+          <h2>How it works</h2>
+          <p class="helper-text">This page uses my backend routes:</p>
+          <ul class="helper-text">
+            <li>GET /api/v1/jobs</li>
+            <li>POST /api/v1/jobs</li>
+            <li>PATCH /api/v1/jobs/:id</li>
+            <li>DELETE /api/v1/jobs/:id</li>
+          </ul>
+          <p class="helper-text">
+            You must be authenticated. The backend reads the JWT from the
+            <code>token</code> cookie (httpOnly). So every request here uses
+            <code>credentials: "include"</code>.
+          </p>
+        </div>
+      </div>
+
+      <!-- RIGHT: JOB LIST -->
+      <div class="right">
+        <div class="jobs-header">
+          <h2>Your jobs</h2>
+          <span class="badge-count" id="jobsCount">0 jobs</span>
+        </div>
+
+        <div class="jobs-list" id="jobsList">
+          <div class="empty-state">Loading jobs...</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const msg = document.getElementById("message");
+      const tabs = document.querySelectorAll(".tab");
+      const formBoxes = document.querySelectorAll(".form-box");
+
+      const jobForm = document.getElementById("jobForm");
+      const saveJobBtn = document.getElementById("saveJobBtn");
+      const companyInput = document.getElementById("company");
+      const positionInput = document.getElementById("position");
+      const statusInput = document.getElementById("status");
+
+      const jobsList = document.getElementById("jobsList");
+      const jobsCount = document.getElementById("jobsCount");
+      (async () => {
+        const res = await fetch("/api/v1/jobs", { credentials: "include" });
+        if (res.status === 401) {
+          window.location.href = "/register.html";
+        }
+      })();
+
+      function setMessage(type, text) {
+        msg.className = "";
+        if (!text) {
+          msg.textContent = "";
+          return;
+        }
+        msg.classList.add(type === "success" ? "success" : "error");
+        msg.textContent = text;
+      }
+
+      function showBox(id) {
+        formBoxes.forEach((box) => {
+          box.classList.toggle("active", box.id === id);
+        });
+
+        tabs.forEach((tab) => {
+          tab.classList.toggle("active", tab.dataset.target === id);
+        });
+      }
+
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          const targetId = tab.dataset.target;
+          showBox(targetId);
+        });
+      });
+
+      async function safeJson(res) {
+        try {
+          return await res.json();
+        } catch {
+          return null;
+        }
+      }
+
+      function statusClass(status) {
+        switch ((status || "").toLowerCase()) {
+          case "interview":
+            return "status-interview";
+          case "decline":
+            return "status-decline";
+          default:
+            return "status-pending";
+        }
+      }
+
+      function statusLabel(status) {
+        const s = (status || "pending").toLowerCase();
+        if (s === "interview") return "Interview";
+        if (s === "decline") return "Declined";
+        return "Pending";
+      }
+
+      function renderJobs(jobs) {
+        if (!Array.isArray(jobs) || jobs.length === 0) {
+          jobsList.innerHTML =
+            '<div class="empty-state">No jobs yet. Create one on the left.</div>';
+          jobsCount.textContent = "0 jobs";
+          return;
+        }
+
+        jobsCount.textContent =
+          jobs.length === 1 ? "1 job" : `${jobs.length} jobs`;
+
+        jobsList.innerHTML = "";
+        jobs.forEach((job) => {
+          const card = document.createElement("div");
+          card.className = "job-card";
+          card.dataset.id = job._id;
+
+          const company = job.company || "Unknown company";
+          const position = job.position || "Unknown position";
+          const status = job.status || "pending";
+
+          card.innerHTML = `
+            <div class="job-top">
+              <div>
+                <div class="job-title">${position}</div>
+                <div class="job-company">${company}</div>
+              </div>
+              <div class="status-pill ${statusClass(status)}">
+                ${statusLabel(status)}
+              </div>
+            </div>
+            <div class="job-meta">
+              <div class="job-actions">
+                <select class="status-select">
+                  <option value="pending" ${
+                    status === "pending" ? "selected" : ""
+                  }>Pending</option>
+                  <option value="interview" ${
+                    status === "interview" ? "selected" : ""
+                  }>Interview</option>
+                  <option value="decline" ${
+                    status === "decline" ? "selected" : ""
+                  }>Declined</option>
+                </select>
+                <button class="btn secondary btn-update" type="button">
+                  Update
+                </button>
+                <button class="btn btn-delete" type="button">
+                  Delete
+                </button>
+              </div>
+              <div style="font-size: 11px; color: #9ca3af;">
+                ${job.createdAt ? new Date(job.createdAt).toLocaleString() : ""}
+              </div>
+            </div>
+          `;
+
+          jobsList.appendChild(card);
+        });
+      }
+
+      async function loadJobs() {
+        try {
+          const res = await fetch("/api/v1/jobs", {
+            method: "GET",
+            credentials: "include",
+          });
+
+          if (res.status === 401 || res.status === 403) {
+            setMessage("error", "Not authorized. Go back to login.");
+            // Optional: redirect to your auth page
+            // window.location.href = "/auth.html";
+            renderJobs([]);
+            return;
+          }
+
+          const data = (await safeJson(res)) || {};
+
+          if (!res.ok || data.success === false) {
+            const message =
+              data.message || "Could not load jobs. Please try again.";
+            setMessage("error", message);
+            renderJobs([]);
+            return;
+          }
+
+          renderJobs(data.data || []);
+        } catch (err) {
+          setMessage("error", "Network error while loading jobs.");
+          renderJobs([]);
+        }
+      }
+
+      // Create job
+      jobForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const company = companyInput.value.trim();
+        const position = positionInput.value.trim();
+        const status = statusInput.value;
+
+        if (!company || !position) {
+          setMessage("error", "Company and position are required.");
+          return;
+        }
+
+        const payload = { company, position, status };
+
+        saveJobBtn.disabled = true;
+        const originalText = saveJobBtn.textContent;
+        saveJobBtn.textContent = "Saving...";
+
+        try {
+          const res = await fetch("/api/v1/jobs", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          if (res.status === 401 || res.status === 403) {
+            setMessage("error", "Not authorized. Go back to login.");
+            return;
+          }
+
+          const data = (await safeJson(res)) || {};
+
+          if (!res.ok || data.success === false) {
+            const message =
+              data.message ||
+              "Could not create job. Check your input and try again.";
+            setMessage("error", message);
+            return;
+          }
+
+          setMessage("success", "Job created.");
+          jobForm.reset();
+          statusInput.value = "pending";
+          await loadJobs();
+        } catch (err) {
+          setMessage("error", "Network error while creating job.");
+        } finally {
+          saveJobBtn.disabled = false;
+          saveJobBtn.textContent = originalText;
+        }
+      });
+
+      // Update and delete actions
+      jobsList.addEventListener("click", async (e) => {
+        const card = e.target.closest(".job-card");
+        if (!card) return;
+        const jobId = card.dataset.id;
+        if (!jobId) return;
+
+        // Update status
+        if (e.target.classList.contains("btn-update")) {
+          const select = card.querySelector(".status-select");
+          if (!select) return;
+          const newStatus = select.value;
+
+          const payload = { status: newStatus };
+
+          e.target.disabled = true;
+          const originalText = e.target.textContent;
+          e.target.textContent = "Updating";
+
+          try {
+            const res = await fetch(`/api/v1/jobs/${jobId}`, {
+              method: "PATCH",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+
+            if (res.status === 401 || res.status === 403) {
+              setMessage("error", "Not authorized. Go back to login.");
+              return;
+            }
+
+            const data = (await safeJson(res)) || {};
+
+            if (!res.ok || data.success === false) {
+              const message =
+                data.message ||
+                "Could not update status. You may not own this job.";
+              setMessage("error", message);
+              return;
+            }
+
+            setMessage("success", "Status updated.");
+            await loadJobs();
+          } catch (err) {
+            setMessage("error", "Network error while updating job.");
+          } finally {
+            e.target.disabled = false;
+            e.target.textContent = originalText;
+          }
+        }
+
+        // Delete job
+        if (e.target.classList.contains("btn-delete")) {
+          if (!confirm("Delete this job? This cannot be undone.")) {
+            return;
+          }
+
+          e.target.disabled = true;
+          const originalText = e.target.textContent;
+          e.target.textContent = "Deleting";
+
+          try {
+            const res = await fetch(`/api/v1/jobs/${jobId}`, {
+              method: "DELETE",
+              credentials: "include",
+            });
+
+            if (res.status === 401 || res.status === 403) {
+              setMessage("error", "Not authorized. Go back to login.");
+              return;
+            }
+
+            // Your deleteJob does not send JSON, so just rely on status
+            if (!res.ok) {
+              setMessage(
+                "error",
+                "Could not delete job. It may not exist or you are not allowed."
+              );
+              return;
+            }
+
+            setMessage("success", "Job deleted.");
+            await loadJobs();
+          } catch (err) {
+            setMessage("error", "Network error while deleting job.");
+          } finally {
+            e.target.disabled = false;
+            e.target.textContent = originalText;
+          }
+        }
+      });
+
+      // Initial load
+      loadJobs();
+    </script>
+  </body>
+</html>

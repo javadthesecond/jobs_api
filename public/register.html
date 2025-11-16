@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Auth</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        background: linear-gradient(135deg, #e3f2fd, #f5f5f5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .container {
+        width: 380px;
+        max-width: 95vw;
+        background: #ffffff;
+        padding: 26px 24px 30px;
+        border-radius: 18px;
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+        position: relative;
+      }
+
+      .tabs {
+        display: flex;
+        margin-bottom: 18px;
+        border-radius: 999px;
+        background: #f0f4f8;
+        padding: 4px;
+      }
+
+      .tab {
+        flex: 1;
+        text-align: center;
+        padding: 8px 0;
+        font-size: 14px;
+        cursor: pointer;
+        border-radius: 999px;
+        user-select: none;
+        transition: background 0.25s, color 0.25s, transform 0.1s;
+      }
+
+      .tab.active {
+        background: #007bff;
+        color: #ffffff;
+        font-weight: 600;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0, 123, 255, 0.25);
+      }
+
+      h2 {
+        text-align: center;
+        margin: 0 0 18px;
+        font-weight: 600;
+        font-size: 22px;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 14px;
+      }
+
+      label {
+        font-size: 13px;
+        margin-bottom: 4px;
+        color: #333;
+      }
+
+      input {
+        padding: 10px 11px;
+        border-radius: 8px;
+        border: 1px solid #d0d7de;
+        background: #fafafa;
+        transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+        font-size: 14px;
+      }
+
+      input:focus {
+        border-color: #007bff;
+        background: #ffffff;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+      }
+
+      .password-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+
+      .password-wrapper input {
+        width: 100%;
+        padding-right: 70px;
+      }
+
+      .toggle-password {
+        position: absolute;
+        right: 10px;
+        font-size: 12px;
+        border-radius: 999px;
+        padding: 3px 8px;
+        border: none;
+        background: #e3f2fd;
+        color: #005fcc;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .toggle-password:hover {
+        background: #d0e6fb;
+      }
+
+      button[type="submit"] {
+        padding: 11px;
+        border: none;
+        border-radius: 10px;
+        background: #007bff;
+        color: white;
+        cursor: pointer;
+        transition: background 0.22s, transform 0.05s, box-shadow 0.2s;
+        margin-top: 6px;
+        font-weight: 600;
+        font-size: 15px;
+        box-shadow: 0 5px 14px rgba(0, 123, 255, 0.35);
+      }
+
+      button[type="submit"]:hover:not(:disabled) {
+        background: #005fcc;
+        transform: translateY(-1px);
+        box-shadow: 0 7px 18px rgba(0, 95, 204, 0.4);
+      }
+
+      button[type="submit"]:disabled {
+        opacity: 0.7;
+        cursor: default;
+        box-shadow: none;
+        transform: none;
+      }
+
+      .switch-text {
+        text-align: center;
+        margin-top: 14px;
+        font-size: 13px;
+        color: #555;
+      }
+
+      .switch-link {
+        color: #007bff;
+        cursor: pointer;
+        font-weight: 500;
+        margin-left: 4px;
+        text-decoration: none;
+      }
+
+      .switch-link:hover {
+        text-decoration: underline;
+      }
+
+      .form-box {
+        display: none;
+        animation: fadeIn 0.25s ease;
+      }
+
+      .form-box.active {
+        display: block;
+      }
+
+      #message {
+        text-align: center;
+        margin-bottom: 10px;
+        font-size: 13px;
+        min-height: 18px;
+      }
+
+      #message.error {
+        color: #d32f2f;
+      }
+
+      #message.success {
+        color: #2e7d32;
+      }
+
+      .helper-text {
+        font-size: 11px;
+        color: #777;
+        margin-top: 3px;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div id="message" aria-live="polite"></div>
+
+      <div class="tabs">
+        <div class="tab active" data-target="loginBox">Login</div>
+        <div class="tab" data-target="registerBox">Register</div>
+      </div>
+
+      <!-- LOGIN -->
+      <div class="form-box active" id="loginBox">
+        <h2>Welcome back</h2>
+        <form id="loginForm" novalidate>
+          <div class="field">
+            <label for="loginEmail">Email</label>
+            <input
+              type="email"
+              id="loginEmail"
+              placeholder="you@example.com"
+              autocomplete="email"
+              required
+            />
+          </div>
+
+          <div class="field">
+            <label for="loginPassword">Password</label>
+            <div class="password-wrapper">
+              <input
+                type="password"
+                id="loginPassword"
+                placeholder="Your password"
+                autocomplete="current-password"
+                minlength="6"
+                required
+              />
+              <button
+                type="button"
+                class="toggle-password"
+                data-input="loginPassword"
+              >
+                Show
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" id="loginBtn">Login</button>
+          <p class="helper-text">Use your existing account credentials.</p>
+        </form>
+
+        <p class="switch-text">
+          New here?
+          <span class="switch-link" data-switch="registerBox"
+            >Create an account</span
+          >
+        </p>
+      </div>
+
+      <!-- REGISTER -->
+      <div class="form-box" id="registerBox">
+        <h2>Create account</h2>
+        <form id="registerForm" novalidate>
+          <div class="field">
+            <label for="regName">Name</label>
+            <input
+              type="text"
+              id="regName"
+              placeholder="Your name"
+              autocomplete="name"
+              required
+            />
+          </div>
+
+          <div class="field">
+            <label for="regEmail">Email</label>
+            <input
+              type="email"
+              id="regEmail"
+              placeholder="you@example.com"
+              autocomplete="email"
+              required
+            />
+          </div>
+
+          <div class="field">
+            <label for="regPassword">Password</label>
+            <div class="password-wrapper">
+              <input
+                type="password"
+                id="regPassword"
+                placeholder="At least 6 characters"
+                autocomplete="new-password"
+                minlength="6"
+                required
+              />
+              <button
+                type="button"
+                class="toggle-password"
+                data-input="regPassword"
+              >
+                Show
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" id="registerBtn">Register</button>
+          <p class="helper-text">
+            Your password should be at least 6 characters long.
+          </p>
+        </form>
+
+        <p class="switch-text">
+          Already have an account?
+          <span class="switch-link" data-switch="loginBox">Login instead</span>
+        </p>
+      </div>
+    </div>
+
+    <script>
+      const msg = document.getElementById("message");
+      const tabs = document.querySelectorAll(".tab");
+      const formBoxes = document.querySelectorAll(".form-box");
+      const switchLinks = document.querySelectorAll(".switch-link");
+
+      const loginForm = document.getElementById("loginForm");
+      const registerForm = document.getElementById("registerForm");
+      const loginBtn = document.getElementById("loginBtn");
+      const registerBtn = document.getElementById("registerBtn");
+
+      function setMessage(type, text) {
+        msg.className = "";
+        if (!text) {
+          msg.textContent = "";
+          return;
+        }
+        msg.classList.add(type === "success" ? "success" : "error");
+        msg.textContent = text;
+      }
+
+      function showBox(id) {
+        formBoxes.forEach((box) => {
+          box.classList.toggle("active", box.id === id);
+        });
+
+        tabs.forEach((tab) => {
+          tab.classList.toggle("active", tab.dataset.target === id);
+        });
+
+        setMessage("", "");
+      }
+
+      // Tab click handlers
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          const targetId = tab.dataset.target;
+          showBox(targetId);
+        });
+      });
+
+      // Switch links under forms
+      switchLinks.forEach((link) => {
+        link.addEventListener("click", () => {
+          const targetId = link.dataset.switch;
+          showBox(targetId);
+        });
+      });
+
+      // Toggle password visibility
+      document.querySelectorAll(".toggle-password").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const inputId = btn.dataset.input;
+          const input = document.getElementById(inputId);
+          if (!input) return;
+
+          const isPassword = input.type === "password";
+          input.type = isPassword ? "text" : "password";
+          btn.textContent = isPassword ? "Hide" : "Show";
+        });
+      });
+
+      async function safeJson(res) {
+        try {
+          return await res.json();
+        } catch {
+          return null;
+        }
+      }
+
+      // LOGIN
+      loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById("loginEmail").value.trim();
+        const password = document.getElementById("loginPassword").value.trim();
+
+        if (!email || !password) {
+          setMessage("error", "Please fill in both email and password.");
+          return;
+        }
+
+        loginBtn.disabled = true;
+        const originalText = loginBtn.textContent;
+        loginBtn.textContent = "Logging in...";
+
+        try {
+          const res = await fetch("/api/v1/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+
+          const data = (await safeJson(res)) || {};
+
+          if (!res.ok || !data.success) {
+            const message =
+              data.message ||
+              (res.status === 401
+                ? "Invalid credentials."
+                : "Login failed. Please try again.");
+            setMessage("error", message);
+            return;
+          }
+
+          setMessage("success", "Login successful.");
+          // Example redirect:
+          window.location.href = "/main.html";
+        } catch (err) {
+          setMessage("error", "Network error. Please check your connection.");
+        } finally {
+          loginBtn.disabled = false;
+          loginBtn.textContent = originalText;
+        }
+      });
+
+      // REGISTER
+      registerForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const name = document.getElementById("regName").value.trim();
+        const email = document.getElementById("regEmail").value.trim();
+        const password = document.getElementById("regPassword").value.trim();
+
+        if (!name || !email || !password) {
+          setMessage("error", "Please fill in all fields.");
+          return;
+        }
+
+        if (password.length < 6) {
+          setMessage("error", "Password must be at least 6 characters.");
+          return;
+        }
+
+        registerBtn.disabled = true;
+        const originalText = registerBtn.textContent;
+        registerBtn.textContent = "Creating account...";
+
+        try {
+          const res = await fetch("/api/v1/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, email, password }),
+          });
+
+          const data = (await safeJson(res)) || {};
+
+          if (!res.ok || !data.success) {
+            const message =
+              data.message ||
+              "Registration failed. Please check your details and try again.";
+            setMessage("error", message);
+            return;
+          }
+
+          setMessage("success", "Registration successful. You can log in now.");
+          showBox("loginBox");
+        } catch (err) {
+          setMessage("error", "Network error. Please check your connection.");
+        } finally {
+          registerBtn.disabled = false;
+          registerBtn.textContent = originalText;
+        }
+      });
+    </script>
+  </body>
+</html>
