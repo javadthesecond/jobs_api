@@ -1,0 +1,90 @@
+A full-stack job management application built with Node.js, Express, MongoDB, and JWT authentication using httpOnly cookies.
+Users can register, log in, and manage their job applications (create, read, update status, delete).
+
+The frontend is served statically through public/ and communicates with the backend using fetch() with credentials: "include".
+
+🚀 Features
+
+<!-- Authentication -->
+
+Register users with name, email, password
+
+Login using email and password
+
+JWT stored in httpOnly cookies
+
+Protected routes using authenticateUser middleware
+
+Cookies use sameSite: strict for security
+
+<!-- Job Management -->
+
+Create a job (company, position, status)
+
+Retrieve all jobs created by current user
+
+Update job status (pending / interview / decline)
+
+Delete job
+
+All job routes require valid authentication
+
+<!-- Frontend -->
+
+Pure HTML/CSS/JS (no frameworks)
+
+Auth pages for register/login
+
+Main dashboard (main.html) that:
+
+Loads user’s jobs
+
+Creates jobs
+
+Updates job status
+
+Deletes jobs
+
+Handles 401/403 authentication errors
+
+Cookie-based authentication (automatic if logged in)
+
+<!-- Project Structure -->
+
+project/
+│
+├── public/
+│ ├── auth.html
+│ ├── main.html
+│ └── (CSS/JS included inline)
+│
+├── controllers/
+│ ├── auth.js
+│ └── jobs.js
+│
+├── middlewares/
+│ ├── authentication.js
+│ ├── errorHandlerMiddleware.js
+│ └── notFound.js
+│
+├── models/
+│ ├── User.js
+│ └── Job.js
+│
+├── routes/
+│ ├── auth.js
+│ └── jobs.js
+│
+├── db/
+│ └── connectDB.js
+│
+├── errors/
+│ └── customError.js
+│
+├── server.js
+└── README.md
+
+<!-- License -->
+
+MIT License
+Feel free to modify, improve, and use this project.
