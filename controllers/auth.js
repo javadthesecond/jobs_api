@@ -40,11 +40,9 @@ const login = async (req, res) => {
     throw CustomApiError.badRequest("Incorrect password");
   }
 
-  // 🔥 Create NEW JWT
   const token = user.createJWT();
   const { name, _id } = user;
 
-  // 🔥 Send cookie again on login
   res.cookie("token", token, {
     httpOnly: true,
     sameSite: "strict",
