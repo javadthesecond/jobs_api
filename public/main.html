@@ -167,6 +167,15 @@
         background: #ebf0f7;
       }
 
+      .logout-btn {
+        position: absolute;
+        top: 12px;
+        right: 16px;
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 999px;
+      }
+
       .helper-text {
         font-size: 11px;
         color: #777;
@@ -319,6 +328,11 @@
     <div class="container">
       <div id="message" aria-live="polite"></div>
 
+      <!-- Logout button -->
+      <button id="logoutBtn" class="btn secondary logout-btn" type="button">
+        Logout
+      </button>
+
       <!-- LEFT: CREATE FORM -->
       <div class="left">
         <div class="tabs">
@@ -356,6 +370,9 @@
                 <option value="interview">Interview</option>
                 <option value="decline">Declined</option>
               </select>
+              <p class="helper-text">
+                Status can be changed later from the jobs list.
+              </p>
             </div>
 
             <button type="submit" id="saveJobBtn">Create job</button>
@@ -364,7 +381,7 @@
 
         <div class="form-box" id="infoBox">
           <h2>How it works</h2>
-          <p class="helper-text">This page uses my backend routes:</p>
+          <p class="helper-text">This page uses your backend routes:</p>
           <ul class="helper-text">
             <li>GET /api/v1/jobs</li>
             <li>POST /api/v1/jobs</li>
@@ -385,6 +402,10 @@
           <h2>Your jobs</h2>
           <span class="badge-count" id="jobsCount">0 jobs</span>
         </div>
+        <p class="helper-text">
+          Jobs are filtered by <code>createdBy: req.user.userId</code> on the
+          server.
+        </p>
 
         <div class="jobs-list" id="jobsList">
           <div class="empty-state">Loading jobs...</div>
@@ -405,12 +426,7 @@
 
       const jobsList = document.getElementById("jobsList");
       const jobsCount = document.getElementById("jobsCount");
-      (async () => {
-        const res = await fetch("/api/v1/jobs", { credentials: "include" });
-        if (res.status === 401) {
-          window.location.href = "/register.html";
-        }
-      })();
+      const logoutBtn = document.getElementById("logoutBtn");
 
       function setMessage(type, text) {
         msg.className = "";
@@ -535,8 +551,7 @@
 
           if (res.status === 401 || res.status === 403) {
             setMessage("error", "Not authorized. Go back to login.");
-            // Optional: redirect to your auth page
-            // window.location.href = "/auth.html";
+            window.location.href = "/register.html";
             renderJobs([]);
             return;
           }
@@ -702,6 +717,24 @@
             e.target.disabled = false;
             e.target.textContent = originalText;
           }
+        }
+      });
+
+      // Logout logic
+      logoutBtn.addEventListener("click", async () => {
+        try {
+          const res = await fetch("/api/v1/auth/logout", {
+            method: "GET",
+            credentials: "include",
+          });
+
+          if (res.ok) {
+            window.location.href = "/register.html";
+          } else {
+            setMessage("error", "Logout failed. Try again.");
+          }
+        } catch (err) {
+          setMessage("error", "Network error while logging out.");
         }
       });
 

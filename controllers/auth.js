@@ -3,21 +3,17 @@ const { StatusCodes, getReasonPhrase } = require("http-status-codes");
 const CustomApiError = require("../errors/customError");
 
 const register = async (req, res) => {
-  // create user in database
   const user = await User.create({ ...req.body });
 
-  // create the jwt token
   const token = user.createJWT();
   const { name, _id } = user;
 
-  // sending Cookies
   res.cookie("token", token, {
     httpOnly: true,
     sameSite: "strict",
     maxAge: Number(process.env.MAX_AGE),
   });
 
-  // sending Response
   res.status(StatusCodes.CREATED).json({
     success: true,
     status: StatusCodes.CREATED,
@@ -29,32 +25,53 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   const { password, email } = req.body;
-  const token = req.cookies.token;
 
   if (!email || !password) {
-    throw CustomApiError.badRequest(getReasonPhrase(StatusCodes.BAD_REQUEST));
+    throw CustomApiError.badRequest("Email and password required");
   }
 
   const user = await User.findOne({ email });
-
   if (!user) {
-    throw CustomApiError.unauthenticatedError(
-      "User not found try another email or signUp"
-    );
+    throw CustomApiError.unauthenticatedError("User not found");
   }
 
-  const passwordValidation = await user.comparePassword(password);
-
-  if (!passwordValidation) {
-    throw CustomApiError.badRequest("Incorrect Password");
+  const passwordValid = await user.comparePassword(password);
+  if (!passwordValid) {
+    throw CustomApiError.badRequest("Incorrect password");
   }
+
+  // 🔥 Create NEW JWT
+  const token = user.createJWT();
+  const { name, _id } = user;
+
+  // 🔥 Send cookie again on login
+  res.cookie("token", token, {
+    httpOnly: true,
+    sameSite: "strict",
+    maxAge: Number(process.env.MAX_AGE),
+  });
 
   res.status(StatusCodes.OK).json({
     success: true,
     status: StatusCodes.OK,
     message: getReasonPhrase(StatusCodes.OK),
-    data: { name: user.name, token, user: { ...req.user } },
+    data: { name, _id },
+    token,
   });
 };
 
-module.exports = { register, login };
+const logout = async (req, res) => {
+  res.cookie("token", "", {
+    httpOnly: true,
+    expires: new Date(0), // immediately expire the cookie
+    sameSite: "strict",
+  });
+
+  res.status(200).json({
+    success: true,
+    status: StatusCodes.OK,
+    message: "Logged out successfully",
+  });
+};
+
+module.exports = { register, login, logout };

@@ -26,6 +26,18 @@ app.use(cookieParser());
 // Routing
 app.use(express.static("public"));
 
+app.get("/", (req, res) => {
+  const token = req.cookies.token;
+  if (!token) {
+    return res
+      .status(StatusCodes.FORBIDDEN)
+      .sendFile(path.join(__dirname, "public", "register.html"));
+  }
+  res
+    .status(StatusCodes.OK)
+    .sendFile(path.join(__dirname, "public", "main.html"));
+});
+
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/jobs", authenticateUser, jobsRouter);
 
